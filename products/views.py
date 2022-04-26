@@ -11,12 +11,15 @@ def index(request):
     return render(request, 'products/index.html', context)
 
 
-def products(request):
+def products(request, category_id=None):
     context = {
         'title': 'Water delivery - Каталог',
         'categories' : ProductCategory.objects.all(),
-        'products' : Product.objects.all(),
     }
+    if category_id:
+        context.update({'products': Product.objects.filter(category_id=category_id)})
+    else:
+        context.update({'products': Product.objects.all()})
     return render(request, 'products/products.html', context)
 
 
