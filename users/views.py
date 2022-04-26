@@ -4,6 +4,7 @@ from django.contrib import auth, messages
 
 from users.forms import UserLoginForm, UserRegistrationForm, UserProfileForm
 from products.models import Basket
+from django.contrib.auth.decorators import login_required
 
 
 def login(request):
@@ -36,6 +37,7 @@ def register(request):
     return render(request, 'users/register.html', context)
 
 
+@login_required #декоратор, не дает зайти на страницу пользователя, если он не авторизован
 def profile(request):
     user = request.user
     if request.method == 'POST':
@@ -45,10 +47,20 @@ def profile(request):
             return HttpResponseRedirect(reverse('users:profile'))
     else:
         form = UserProfileForm(instance=user)
+    baskets = Basket.objects.filter(user=user)
+    total_quantity = sum(basket.quantity for basket in baskets) # аналогично циклу внизу
+    total_sum = sum(basket.sum() for basket in baskets)
+    # total_quantity = 0
+    # total_sum = 0
+    # for basket in baskets:
+    #     total_quantity += basket.quantity
+    #     total_sum += basket.sum()
     context = {
         'form': form,
         'title': 'Water Shop - Личный кабинет',
-        'baskets': Basket.objects.filter(user=user),
+        'baskets':  baskets,
+        'total_quantity': total_quantity,
+        'total_sum': total_sum,
     }
     return render(request, 'users/profile.html', context)
 
